@@ -15,7 +15,7 @@ template "#{node['apache']['dir']}/sites-available/descartes" do
     :port         => node['descartes']['proxy_port'],
   )
 
-  if File.exists?("#{node[:apache][:dir]}/sites-enabled/descartes")
+  if File.exists?("#{node['apache']['dir']}/sites-enabled/descartes")
     notifies  :restart, 'service[apache2]'
   end
 end

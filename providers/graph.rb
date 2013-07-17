@@ -23,28 +23,28 @@
 def load_current_resource
   require 'cgi'
 
-  @current_resource = Chef::Resource::DescartesGraph.new(@new_resource.name)
+  @current_resource = Chef::Resource::DescartesGraph.new(new_resource.name)
 
   descartes_hostname, descartes_port = locate_descartes_server
-  Chef::Log.debug("#{@new_resource} Connecting to (#{descartes_hostname}, #{descartes_port})")
-  Chef::Log.debug("#{@new_resource} Using headers #{headers}")
+  Chef::Log.debug("#{new_resource} Connecting to (#{descartes_hostname}, #{descartes_port})")
+  Chef::Log.debug("#{new_resource} Using headers #{headers}")
   @client ||= Net::HTTP.new(descartes_hostname, descartes_port)
 
   # Look up the current graph data from descartes
 
   search_term = URI::encode(graph_name)
-  Chef::Log.debug("#{@new_resource} Searching for #{search_term}")
+  Chef::Log.debug("#{new_resource} Searching for #{search_term}")
   body = @client.get("/graphs?search=#{search_term}", headers)
   JSON.create_id = nil
   matches = JSON.parse(body.read_body)
 
   if matches.empty?
     # The graph doesn't exist
-    Chef::Log.debug("#{@new_resource} No Descartes graph found before create")
+    Chef::Log.debug("#{new_resource} No Descartes graph found before create")
   elsif matches.size > 1
     # More than one graph matches
     matches.each do |m|
-      Chef::Log.debug("#{@new_resource} Purging Descartes graph before create: #{m}")
+      Chef::Log.debug("#{new_resource} Purging Descartes graph before create: #{m}")
       # Delete them
       @client.delete("/graphs/#{m['uuid']}", headers)
     end
@@ -52,9 +52,9 @@ def load_current_resource
     # Match found
     m = matches.first
     m['configuration'] = JSON.parse(m['configuration'])
-    Chef::Log.debug("#{@new_resource} Located Descartes graph: #{m}")
-    if targets_equal?(m['configuration']['target'], @new_resource.targets)
-      @new_resource.graph_data(m)
+    Chef::Log.debug("#{new_resource} Located Descartes graph: #{m}")
+    if targets_equal?(m['configuration']['target'], new_resource.targets)
+      new_resource.graph_data(m)
     end
   end
 
@@ -62,18 +62,17 @@ def load_current_resource
 end
 
 action :create do
-  converge_by("#{@new_resource} create graph") do
-    @new_resource.updated_by_last_action(true)
+  converge_by("#{new_resource} create graph") do
 
-    if @new_resource.graph_data.nil?
-      Chef::Log.info("#{@new_resource} Creating!")
+    if new_resource.graph_data.nil?
+      Chef::Log.info("#{new_resource} Creating!")
       # $ curl -H 'Accept: application/json' -H 'X-DESCARTES-API-TOKEN: foobar' -d 'name=My New Graph' -d 'tag=foo' \
       #   --data-urlencode 'node=https://graphite.example.com/render/?target=carbon.agents.li520-115-a.metricsReceived' \
       #   -X POST http://127.0.0.1:5000/graphs
 
       graph_url = "http://#{node['graphite']['url']}/render/?"
       graph_targets = Array.new
-      @new_resource.targets.each do |target|
+      new_resource.targets.each do |target|
         graph_targets << "target=#{target}"
       end
       graph_url << graph_targets.join('&')
@@ -83,22 +82,26 @@ action :create do
       data << "name=#{CGI::escape(graph_name)}"
       data << "tag[]=chef_managed"
       data << "tag[]=#{CGI::escape(node.chef_environment)}"
-      @new_resource.tags.each {|t| data << "tag[]=#{CGI::escape(t)}"}
+      new_resource.tags.each {|t| data << "tag[]=#{CGI::escape(t)}"}
 
-      Chef::Log.debug("#{@new_resource} Posting new graph with #{data.join('&')}")
+      Chef::Log.debug("#{new_resource} Posting new graph with #{data.join('&')}")
       body, result = @client.post("/graphs", data.join('&'), headers)
-      Chef::Log.debug("#{@new_resource} Post result is #{result}")
+      Chef::Log.debug("#{new_resource} Post result is #{result}")
+
+      new_resource.updated_by_last_action(true)
     end
 
   end
 end
 
 action :delete do
-  converge_by("#{@new_resource} delete graph") do
-    @new_resource.updated_by_last_action(true)
+  converge_by("#{new_resource} delete graph") do
 
-    if @new_resource.graph_data
-      Chef::Log.info("#{@new_resource} Deleting!")
+    if new_resource.graph_data
+      # XXX: Implement me
+      Chef::Log.info("#{new_resource} Deleting!")
+
+      new_resource.updated_by_last_action(true)
     end
 
   end
@@ -146,10 +149,10 @@ def targets_equal?(a, b)
 end
 
 def graph_name
-  if @new_resource.common_format
-    "#{node.chef_environment} - #{node['fqdn']} - #{@new_resource.name}"
+  if new_resource.common_format
+    "#{node.chef_environment} - #{node['fqdn']} - #{new_resource.name}"
   else
-    @new_resource.name
+    new_resource.name
   end
 end
 
@@ -168,13 +171,13 @@ def locate_descartes_server
   unless Chef::Config[:solo]
     @descartes_node ||= search(:node, "roles:#{node['descartes']['role_name']}").first
     unless @descartes_node.nil?
-      descartes_hostname = @new_resource.descartes_hostname || @descartes_node['descartes']['host_name']
-      descartes_port = @new_resource.descartes_port || @descartes_node['descartes']['proxy_port']
+      descartes_hostname = new_resource.descartes_hostname || @descartes_node['descartes']['host_name']
+      descartes_port = new_resource.descartes_port || @descartes_node['descartes']['proxy_port']
     end
   end
 
-  descartes_hostname ||= @new_resource.descartes_hostname || node['descartes']['host_name']
-  descartes_port ||= @new_resource.descartes_port || node['descartes']['proxy_port']
+  descartes_hostname ||= new_resource.descartes_hostname || node['descartes']['host_name']
+  descartes_port ||= new_resource.descartes_port || node['descartes']['proxy_port']
 
   [descartes_hostname, descartes_port]
 end
