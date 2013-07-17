@@ -1,0 +1,25 @@
+<VirtualHost *:<%= @port %>>
+
+  DocumentRoot /opt/descartes/current
+  ServerName <%= @host_name %>
+  <% unless @host_aliases.empty? -%>
+  ServerAlias <%= @host_aliases.join(' ') %>
+  <% end %>
+
+  ErrorLog <%= node['apache']['log_dir'] %>/descartes-error.log
+  TransferLog <%= node['apache']['log_dir'] %>/descartes-access.log
+
+  RewriteEngine On
+
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+  ProxyRequests Off
+  ProxyPreserveHost On
+
+  RewriteRule ^/(.*)$ http://127.0.0.1:8080/$1 [P,QSA,L]
+  ProxyPassReverse / http://127.0.0.1:8080
+
+</VirtualHost>
