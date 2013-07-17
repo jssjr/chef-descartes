@@ -6,10 +6,12 @@
 
 ### Cookbooks
 
+- [apache2](https://github.com/opscode-cookbooks/apache2)
+- [application_ruby](https://github.com/opscode-cookbooks/application_ruby)
 - [database](https://github.com/opscode-cookbooks/database)
 - [postgresql](https://github.com/opscode-cookbooks/postgresql)
-- [application_ruby](https://github.com/opscode-cookbooks/application_ruby)
 - [redis](https://github.com/miah/chef-redis)
+- [runit](https://github.com/opscode-cookbooks/runit)
 
 ### Other ingredients
 
