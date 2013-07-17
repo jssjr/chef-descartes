@@ -101,7 +101,7 @@ Set's up an Apache httpd proxy for descartes.
 
 # Authors
 
-Authors: Scott Sanders <scott@jssjr.com>
+Authors: Scott Sanders (<scott@jssjr.com>)
 
 # License
 
