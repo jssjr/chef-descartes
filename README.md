@@ -1,5 +1,7 @@
 # Descartes Cookbook
 
+[![Build Status](https://travis-ci.org/jssjr/chef-descartes.png?branch=master)](https://travis-ci.org/jssjr/chef-descartes)
+
 [Descartes](https://github.com/obfuscurity/descartes) is a collaborative dashboard and graph management tool for [Graphite](https://github.com/graphite-project). This cookbook installs and manages a Descartes instance and offers a number of LWRP's you can use to manage graphs in the graph system. Mix together some collectd with write_graphite, maybe a side of statsd or riemann, and even some artisinal data collection scripts, then toss in this Descartes cookbook and you're ready to serve up some serious monitoring love.
 
 # Requirements
