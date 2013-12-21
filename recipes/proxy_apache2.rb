@@ -12,7 +12,7 @@ template "#{node['apache']['dir']}/sites-available/descartes" do
   variables(
     :host_name    => node['descartes']['host_name'],
     :host_aliases => node['descartes']['host_aliases'],
-    :port         => node['descartes']['proxy_port'],
+    :port         => node['descartes']['proxy_port']
   )
 
   if File.exists?("#{node['apache']['dir']}/sites-enabled/descartes")
